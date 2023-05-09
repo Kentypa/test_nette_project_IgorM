@@ -1,0 +1,73 @@
+Шаг 1: Создание метода для обработки загрузки файла
+Создайте метод uploadFormSucceeded(), 
+который будет вызываться после успешной отправки формы.
+Этот метод получит загруженный файл и переместит его в нужную папку на сервере.
+
+use Nette\Application\UI\Form;
+use Nette\Http\FileUpload;
+
+class HomePresenter extends Nette\Application\UI\Presenter
+{
+    public function renderIndex()
+    {
+        // Ваш код
+    }
+
+    public function createComponentUploadForm()
+    {
+        $form = new Form();
+
+        $form->addUpload('file', 'Выберите файл:')
+            ->setRequired('Выберите файл для загрузки.');
+
+        $form->addSubmit('submit', 'Загрузить');
+
+        $form->onSuccess[] = [$this, 'uploadFormSucceeded'];
+
+        return $form;
+    }
+
+	public function uploadFormSucceeded(Form $form, \stdClass $values)
+	{
+			/** @var FileUpload $file */
+			$file = $values->file;
+
+			if ($file->isOk()) {
+				$file->move('./uploads/' . $file->name);
+
+				$this->flashMessage('Файл успешно загружен', 'success');
+			} else {
+				$this->flashMessage('Произошла ошибка при загрузке файла', 'danger');
+			}
+
+			$this->redirect('this');
+		}
+	}
+
+
+Здесь мы получаем объект FileUpload из отправленной формы, проверяем, успешно ли загружен файл, и перемещаем его в папку uploads на сервере. 
+Если загрузка прошла успешно, мы выводим сообщение об успехе, иначе сообщение об ошибке.
+Затем мы перенаправляем пользователя на ту же страницу, чтобы обновить страницу.
+
+
+Шаг 2: Добавление формы в шаблон
+Теперь, когда у нас есть форма и метод для обработки загрузки файла, 
+нам нужно добавить форму в шаблон index.latte. 
+Вместо того, чтобы создавать форму в шаблоне, 
+мы можем использовать метод createComponentUploadForm(), чтобы создать форму автоматически.
+
+{block content}
+    <div class="container">
+        <h1>Загрузить файл</h1>
+        {control uploadForm}
+    </div>
+{/block}
+
+
+{control uploadForm} автоматически создает форму UploadForm с использованием метода createComponentUploadForm().
+Теперь форма для загрузки файла должна отображаться на странице index.latte.
+
+Шаг 3: Создайте папку www/uploads/ 
+
+Это все! Теперь у вас должна быть рабочая форма для загрузки файла в фреймворке Nette.
+Надеюсь, эта инструкция была полезной. Если у вас есть какие-либо вопросы, не стесняйтесь спрашивать!
